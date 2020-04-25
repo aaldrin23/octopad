@@ -9,7 +9,10 @@ import axios from "axios";
 // axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
 let config = {
-  baseURL: "http://octopi.local/api",
+  baseURL:
+    process.env.NODE_ENV == "development"
+      ? "http://192.168.100.11/api"
+      : "http://octopi.local/api",
   timeout: 60 * 1000, // Timeout
   // withCredentials: true, // Check cross-site Access-Control
 };
