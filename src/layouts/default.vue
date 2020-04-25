@@ -4,7 +4,7 @@
       <v-avatar size="40" color="transparent">
         <v-img src="@/assets/logo.svg"></v-img>
       </v-avatar>
-      <span class="px-2">OctoCon</span>
+      <span class="px-2">OctoPad</span>
       <v-spacer></v-spacer>
       <v-dialog v-model="showSettings" scrollable persistent max-width="500px">
         <template #activator="{on}">
