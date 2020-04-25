@@ -1,10 +1,17 @@
 module.exports = {
-  "pluginOptions": {
-    "autoRouting": {
-      "chunkNamePrefix": "page-"
-    }
+  pluginOptions: {
+    autoRouting: {
+      chunkNamePrefix: "page-",
+    },
   },
-  "transpileDependencies": [
-    "vuetify"
-  ]
-}
+
+  transpileDependencies: ["vuetify"],
+
+  publicPath: "",
+
+  pluginOptions: {
+    autoRouting: {
+      chunkNamePrefix: "page-",
+    },
+  },
+};
