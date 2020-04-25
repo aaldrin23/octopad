@@ -1,4 +1,4 @@
-# octopipe
+# octopad
 
 ## Project setup
 ```
