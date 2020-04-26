@@ -2,6 +2,9 @@
   <v-container>
     <v-tabs-items v-model="tab" style="background : transparent">
       <v-tab-item>
+        <job-panel></job-panel>
+      </v-tab-item>
+      <v-tab-item>
         <v-expansion-panels mandatory>
           <v-expansion-panel>
             <v-expansion-panel-header>Temperature</v-expansion-panel-header>
@@ -228,32 +231,29 @@
           </v-expansion-panel>
         </v-expansion-panels>
       </v-tab-item>
-      <!--   <v-tab-item>
-        <temperature-panel></temperature-panel>
-      </v-tab-item>-->
     </v-tabs-items>
-    <!--  <v-bottom-navigation app v-model="tab" fixed>
+    <v-bottom-navigation v-model="tab" app fixed active-class="primary">
       <v-btn>
-        <span>Controls</span>
-        <v-icon>mdi-controller-classic</v-icon>
+        <v-icon>mdi-printer-3d-nozzle</v-icon>
+        <span>Job</span>
       </v-btn>
       <v-btn>
-        <span>Temperature</span>
-        <v-icon>mdi-thermometer-lines</v-icon>
+        <v-icon>mdi-controller-classic-outline</v-icon>
+        <span>Control</span>
       </v-btn>
-    </v-bottom-navigation>-->
+    </v-bottom-navigation>
   </v-container>
 </template>
 
 <script>
 // @ is an alias to /src
-import SockJS from "sockjs-client";
 import clonedeep from "lodash.clonedeep";
 
 import CmdButton from "@/components/CommandButton";
 import FeedRateSlider from "@/components/FeedRateSlider";
 import FlowRateSlider from "@/components/FlowRateSlider";
 import TempControl from "@/components/TempControl";
+import JobPanel from "@/components/JobPanel";
 
 import { mapMutations } from "vuex";
 export default {
@@ -262,7 +262,8 @@ export default {
     CmdButton,
     FeedRateSlider,
     FlowRateSlider,
-    TempControl
+    TempControl,
+    JobPanel
   },
   data() {
     return {
@@ -308,20 +309,7 @@ export default {
   },
   async created() {
     let vm = this;
-    const { data } = await this.$axios.post("/login", {
-      passive: true
-    });
-    var sock = new SockJS("http://octopi.local/sockjs");
-
-    sock.onopen = function() {
-      sock.send(
-        JSON.stringify({
-          auth: "aaldrin:" + data.session
-        })
-      );
-    };
-
-    sock.onmessage = function(e) {
+    this.$eventBus.$on("server_message", e => {
       const { data } = e;
       const { current } = data;
 
@@ -330,9 +318,7 @@ export default {
           vm.setTemp(current.temps[0]);
         }
       }
-    };
-
-    sock.onclose = function() {};
+    });
   },
   methods: {
     ...mapMutations(["setTemp"]),

@@ -5,6 +5,7 @@ import "./registerServiceWorker";
 import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
+import VeeValidate from "vee-validate";
 
 import VuetifyToast from "vuetify-toast-snackbar";
 import Storage from "vue-ls";
@@ -12,6 +13,7 @@ import Storage from "vue-ls";
 Vue.config.productionTip = false;
 
 Vue.use(VuetifyToast);
+Vue.use(VeeValidate);
 
 const options = {
   namespace: "vuejs__", // key prefix
@@ -19,6 +21,20 @@ const options = {
   storage: "local", // storage name session, local, memory
 };
 Vue.use(Storage, options);
+
+Vue.use({
+  install(Vue, options) {
+    const _eventBus = new Vue();
+
+    Object.defineProperties(Vue.prototype, {
+      $eventBus: {
+        get() {
+          return _eventBus;
+        },
+      },
+    });
+  },
+});
 
 new Vue({
   router,

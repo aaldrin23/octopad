@@ -8,10 +8,16 @@ import axios from "axios";
 // axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 // axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
+const ls = localStorage;
+
+let server_ip = JSON.parse(ls.getItem("vuejs__server_ip")).value;
+
+console.log(`API address : http://${server_ip}/api`);
+
 let config = {
   baseURL:
     process.env.NODE_ENV == "development"
-      ? "http://192.168.100.11/api"
+      ? `http://${server_ip}/api`
       : "http://octopi.local/api",
   timeout: 60 * 1000, // Timeout
   // withCredentials: true, // Check cross-site Access-Control
@@ -21,9 +27,11 @@ const _axios = axios.create(config);
 
 _axios.interceptors.request.use(
   function(config) {
+    let api_key = JSON.parse(ls.getItem("vuejs__api_key")).value;
+
     // Do something before request is sent
     config.headers = {
-      "X-Api-Key": "9360889BE6974538AFBA6F569B071DEF",
+      "X-Api-Key": api_key,
     };
     return config;
   },
@@ -56,6 +64,7 @@ Plugin.install = function(Vue, options) {
     },
     $axios: {
       get() {
+        server_ip = ls.getItem("vuejs__server_ip");
         return _axios;
       },
     },
