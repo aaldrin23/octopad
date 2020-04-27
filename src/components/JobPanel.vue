@@ -136,7 +136,7 @@ export default {
       return value;
     },
     issueJobCommand(cmd, params) {
-      this.$axios.post("/job", {
+      axios.post("/job", {
         command: cmd,
         ...params
       });

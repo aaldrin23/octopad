@@ -27,7 +27,7 @@
           <v-card-title class="pa-2">
             <v-icon left>mdi-tune</v-icon>Settings
             <v-spacer></v-spacer>
-            <v-btn v-if="!!server_ip || !!api_key" @click="showSettings = false" icon>
+            <v-btn v-if="!!server_ip && !!api_key" @click="showSettings = false" icon>
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-card-title>
@@ -50,7 +50,7 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :disabled="errors.any()" @click="saveSettings" color="primary">Save</v-btn>
+            <v-btn :disabled="!server_ip || !api_key" @click="saveSettings" color="primary">Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -58,14 +58,21 @@
     <v-content>
       <router-view />
     </v-content>
+    <v-dialog :value="!connected && disconected" persistent max-width="500px">
+      <v-card>
+        <v-card-title class="error pa-2">No Connection!</v-card-title>
+        <v-card-text>Disconected from Server</v-card-text>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 <script>
 import SockJS from "sockjs-client";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 export default {
   data() {
     return {
+      disconected: false,
       api_key: "",
       server_ip: "",
       session_id: "",
@@ -74,6 +81,7 @@ export default {
   },
   computed: {
     ...mapState({
+      connected: state => state.connected,
       temp(state) {
         return {
           tool0: state.temp.tool0.actual,
@@ -94,22 +102,24 @@ export default {
     }
   },
   methods: {
+    ...mapMutations(["setConnected"]),
     async saveSettings() {
       const valid = this.$validator.validateAll();
 
       if (valid) {
         this.$ls.set("api_key", this.api_key);
         this.$ls.set("server_ip", this.server_ip);
+        window.createAxios(this.server_ip);
+        await this.login();
+        this.startServerEventListener();
+        this.showSettings = false;
       }
-      this.showSettings = false;
-      await this.login();
-      this.startServerEventListener();
     },
     async login() {
       console.log(`Obtaining session id using ${this.api_key}`);
 
       try {
-        const { data } = await this.$axios
+        const { data } = await axios
           .post("/login", {
             passive: true
           })
@@ -117,7 +127,10 @@ export default {
 
         this.session_id = data.session;
         this.$ls.set("session_id", this.session_id);
+        this.setConnected(true);
       } catch (error) {
+        console.log(error);
+
         this.$toast.error("Unable to connect to server!");
       }
     },
@@ -135,8 +148,17 @@ export default {
         );
       };
 
+      let timeout = null;
       sock.onmessage = function(e) {
+        vm.setConnected(true);
+        vm.disconected = false;
         vm.$eventBus.$emit("server_message", e);
+
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          vm.setConnected(false);
+          vm.disconected = true;
+        }, 20000);
       };
 
       sock.onclose = function() {

@@ -1,6 +1,6 @@
 <template>
   <section>
-    <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
+    <v-progress-linear v-if="loading && $store.state.connected" indeterminate></v-progress-linear>
     <div v-else>
       <span class="title primary--text px-3">Files</span>
       <v-list rippl>
@@ -55,6 +55,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   data() {
     return {
@@ -64,15 +65,23 @@ export default {
     };
   },
   computed: {
+    ...mapState(["connected"]),
     items() {
       const s = this.stack;
       return s[s.length - 1];
+    },
+    server_ip() {
+      return this.$ls.get("server_ip");
     }
   },
   created() {
-    this.$axios
-      .get("files", { params: { recursive: true } })
-      .then(({ data }) => {
+    if (this.connected) {
+      this.getFiles();
+    }
+  },
+  methods: {
+    getFiles() {
+      axios.get("files", { params: { recursive: true } }).then(({ data }) => {
         data.files.sort(function(a, b) {
           return a.type == "folder" ? -1 : 1;
         });
@@ -80,13 +89,15 @@ export default {
         this.stack.push(this.files.files);
         this.loading = false;
       });
-  },
-  methods: {
+    },
     loadFile(file) {
-      this.$axios.post(`/files/${file.origin}/${file.path}`, {
+      axios.post(`/files/${file.origin}/${file.path}`, {
         command: "select"
       });
     }
+  },
+  watch: {
+    connected: "getFiles"
   }
 };
 </script>

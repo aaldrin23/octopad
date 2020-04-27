@@ -49,7 +49,7 @@ export default {
       this.confirmed();
     },
     confirmed() {
-      this.$axios.post("printer/tool", {
+      axios.post("printer/tool", {
         command: "flowrate",
         factor: this.model
       });
