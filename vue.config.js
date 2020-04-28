@@ -10,5 +10,5 @@ module.exports = {
   transpileDependencies: ["vuetify"],
 
   publicPath: "",
-  outputDir : path.resolve(__dirname,'app/www')
+  outputDir: path.resolve(__dirname, "app/views"),
 };
