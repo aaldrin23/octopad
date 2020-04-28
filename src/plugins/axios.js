@@ -11,10 +11,7 @@ const ls = localStorage;
 
 window.createAxios = (ip) => {
   let config = {
-    baseURL:
-      process.env.NODE_ENV == "development"
-        ? `http://${ip}/api`
-        : "http://octopi.local/api",
+    baseURL: `http://${ip}/api`,
     timeout: 60 * 1000, // Timeout
     // withCredentials: true, // Check cross-site Access-Control
   };
@@ -55,5 +52,7 @@ window.createAxios = (ip) => {
 let server_ip = (JSON.parse(ls.getItem("vuejs__server_ip")) || {}).value;
 
 if (server_ip) {
+  console.log("creating axios for " + server_ip);
+
   createAxios(server_ip);
 }
