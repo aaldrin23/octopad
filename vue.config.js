@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   pluginOptions: {
     autoRouting: {
@@ -8,10 +10,5 @@ module.exports = {
   transpileDependencies: ["vuetify"],
 
   publicPath: "",
-
-  pluginOptions: {
-    autoRouting: {
-      chunkNamePrefix: "page-",
-    },
-  },
+  outputDir: path.resolve(__dirname, "app/views"),
 };

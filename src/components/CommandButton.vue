@@ -14,7 +14,7 @@ export default {
   },
   methods: {
     send() {
-      this.$axios
+      axios
         .post("/printer/command", {
           commands: this.commands,
           parameters: {}

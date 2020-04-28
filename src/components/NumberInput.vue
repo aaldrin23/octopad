@@ -5,17 +5,17 @@
     hide-details
     dense
     solo
-    class="pt-0 mt-0"
     v-bind="$attrs"
+    class="number_input pt-0 mt-0"
   >
-    <template #prepend-inner>
+    <template v-if="showControl" #prepend-inner>
       <v-btn @click.stop="decrement" icon>
-        <v-icon>mdi-arrow-left-thick</v-icon>
+        <v-icon small>mdi-arrow-left-thick</v-icon>
       </v-btn>
     </template>
-    <template #append>
+    <template v-if="showControl" #append>
       <v-btn @click.stop="increment" icon>
-        <v-icon>mdi-arrow-right-thick</v-icon>
+        <v-icon small>mdi-arrow-right-thick</v-icon>
       </v-btn>
     </template>
   </v-text-field>
@@ -26,6 +26,9 @@ export default {
   props: {
     value: {
       type: Number | String
+    },
+    showControl: {
+      type: Boolean
     }
   },
   data() {
@@ -56,3 +59,14 @@ export default {
   }
 };
 </script>
+<style  lang="scss">
+.number_input {
+  .v-input__slot {
+    padding: 0 !important;
+
+    input {
+      text-align: center;
+    }
+  }
+}
+</style>

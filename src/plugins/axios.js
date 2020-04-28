@@ -1,6 +1,5 @@
 "use strict";
 
-import Vue from "vue";
 import axios from "axios";
 
 // Full config:  https://github.com/axios/axios#request-config
@@ -8,60 +7,52 @@ import axios from "axios";
 // axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 // axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
-let config = {
-  baseURL:
-    process.env.NODE_ENV == "development"
-      ? "http://192.168.100.11/api"
-      : "http://octopi.local/api",
-  timeout: 60 * 1000, // Timeout
-  // withCredentials: true, // Check cross-site Access-Control
-};
+const ls = localStorage;
 
-const _axios = axios.create(config);
+window.createAxios = (ip) => {
+  let config = {
+    baseURL: `http://${ip}/api`,
+    timeout: 60 * 1000, // Timeout
+    // withCredentials: true, // Check cross-site Access-Control
+  };
 
-_axios.interceptors.request.use(
-  function(config) {
-    // Do something before request is sent
-    config.headers = {
-      "X-Api-Key": "9360889BE6974538AFBA6F569B071DEF",
-    };
-    return config;
-  },
-  function(error) {
-    // Do something with request error
-    return Promise.reject(error);
-  }
-);
+  const _axios = axios.create(config);
 
-// Add a response interceptor
-_axios.interceptors.response.use(
-  function(response) {
-    // Do something with response data
-    return response;
-  },
-  function(error) {
-    // Do something with response error
-    return Promise.reject(error);
-  }
-);
+  _axios.interceptors.request.use(
+    function(config) {
+      let api_key = (JSON.parse(ls.getItem("vuejs__api_key")) || {}).value;
 
-Plugin.install = function(Vue, options) {
-  Vue.axios = _axios;
+      // Do something before request is sent
+      config.headers = {
+        "X-Api-Key": api_key,
+      };
+      return config;
+    },
+    function(error) {
+      // Do something with request error
+      return Promise.reject(error);
+    }
+  );
+
+  // Add a response interceptor
+  _axios.interceptors.response.use(
+    function(response) {
+      // Do something with response data
+      return response;
+    },
+    function(error) {
+      // Do something with response error
+      return Promise.reject(error);
+    }
+  );
+
   window.axios = _axios;
-  Object.defineProperties(Vue.prototype, {
-    axios: {
-      get() {
-        return _axios;
-      },
-    },
-    $axios: {
-      get() {
-        return _axios;
-      },
-    },
-  });
 };
 
-Vue.use(Plugin);
+let server_ip = (JSON.parse(ls.getItem("vuejs__server_ip")) || {}).value;
 
-export default Plugin;
+if (server_ip) {
+  console.log("creating axios for " + server_ip);
+
+  createAxios(server_ip);
+}
