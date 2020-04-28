@@ -29,7 +29,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel>
-              <v-expansion-panel-header>Extruder</v-expansion-panel-header>
+              <v-expansion-panel-header>Filament</v-expansion-panel-header>
               <v-expansion-panel-content>
                 <v-row>
                   <v-col cols="4">
@@ -57,10 +57,10 @@
                     >Retract</v-btn>
                   </v-col>
                   <v-col cols="6" class="d-flex justify-end">
-                    <cmd-button text="Change Filament" :commands="['M600']"></cmd-button>
+                    <cmd-button text="Change" :commands="['M600']"></cmd-button>
                   </v-col>
                   <v-col cols="6" class="d-flex justify-start">
-                    <cmd-button text="Load Filament" :commands="['LOAD_FILAMENT']"></cmd-button>
+                    <cmd-button text="Load" :commands="['LOAD_FILAMENT']"></cmd-button>
                   </v-col>
                 </v-row>
               </v-expansion-panel-content>
@@ -178,7 +178,7 @@
                 v-show="!noCam"
                 @error="cameraStreamError"
                 @load="() => {noCam = false;loadingCamera = false}"
-                src="http://octopi.local/webcam/?action=stream"
+                :src="`http://${server_ip}/webcam/?action=stream`"
                 height="304"
                 class="d-flex"
               ></v-img>
@@ -218,7 +218,7 @@ import TempControl from "@/components/TempControl";
 import JobPanel from "@/components/JobPanel";
 import Controls from "@/components/Controls";
 
-import { mapMutations } from "vuex";
+import { mapMutations, mapState } from "vuex";
 export default {
   name: "home",
   components: {
@@ -270,6 +270,11 @@ export default {
         }
       }
     };
+  },
+  computed: {
+    server_ip() {
+      return this.$ls.get("server_ip");
+    }
   },
   async created() {
     let vm = this;
