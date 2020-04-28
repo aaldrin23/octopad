@@ -1,14 +1,19 @@
 <template>
   <section>
     <v-row align="center">
-      <v-col cols="auto" class="mr-auto">
+      <v-col cols="5" class="pa-0">
         {{label}} -
         <span class="title">{{actual}}&deg;C</span>
       </v-col>
-      <v-col cols="5" class="pa-0">
-        <number-input :placeholder="`${target || '0'}°C`" v-model.number="newTarget"></number-input>
+      <v-spacer></v-spacer>
+      <v-col cols="4" class="pa-0">
+        <number-input
+          :placeholder="`${target || '0'}°C`"
+          v-model.number="newTarget"
+          style="max-width : 110px"
+        ></number-input>
       </v-col>
-      <v-col cols="auto">
+      <v-col cols="3" class="pa-0">
         <v-btn
           @click="setNewTarget(newTarget)"
           color="primary"
