@@ -5,23 +5,18 @@
         <v-tab-item>
           <job-panel></job-panel>
         </v-tab-item>
+
+        <v-tab-item>
+          <temp-panel></temp-panel>
+        </v-tab-item>
         <v-tab-item>
           <v-expansion-panels mandatory>
-            <v-expansion-panel>
+            <!--  <v-expansion-panel>
               <v-expansion-panel-header>Temperature</v-expansion-panel-header>
               <v-expansion-panel-content>
-                <temp-control
-                  @update="sendCommand('heat_tools',{targets : {tool0 : $event}})"
-                  label="Tool"
-                  data-key="tool0"
-                ></temp-control>
-                <temp-control
-                  @update="sendCommand('heat_bed',{target : $event})"
-                  label="Bed"
-                  data-key="bed"
-                ></temp-control>
+               
               </v-expansion-panel-content>
-            </v-expansion-panel>
+            </v-expansion-panel>-->
             <v-expansion-panel>
               <v-expansion-panel-header>Control</v-expansion-panel-header>
               <v-expansion-panel-content>
@@ -66,7 +61,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel>
-              <v-expansion-panel-header>Mesg Bed Leveling</v-expansion-panel-header>
+              <v-expansion-panel-header>Mesh Bed Leveling</v-expansion-panel-header>
               <v-expansion-panel-content>
                 <v-row>
                   <v-col cols="4" class="d-flex justify-center">
@@ -198,6 +193,10 @@
         <span>Job</span>
       </v-btn>
       <v-btn>
+        <v-icon>mdi-thermometer</v-icon>
+        <span>Temperature</span>
+      </v-btn>
+      <v-btn>
         <v-icon>mdi-controller-classic-outline</v-icon>
         <span>Control</span>
       </v-btn>
@@ -206,6 +205,17 @@
         <span>Camera</span>
       </v-btn>
     </v-bottom-navigation>
+    <cmd-button
+      icon="mdi-power-settings"
+      :commands=" ['M112']"
+      style="z-index : 5;left : 50%;top: 7px;transform : translateX(-50%)"
+      small
+      fab
+      top
+      center
+      fixed
+      color="error"
+    ></cmd-button>
   </v-container>
 </template>
 
@@ -214,18 +224,18 @@
 import clonedeep from "lodash.clonedeep";
 
 import CmdButton from "@/components/CommandButton";
-import TempControl from "@/components/TempControl";
 import JobPanel from "@/components/JobPanel";
 import Controls from "@/components/Controls";
+import TempPanel from "@/components/TempPanel";
 
 import { mapMutations, mapState } from "vuex";
 export default {
   name: "home",
   components: {
     CmdButton,
-    TempControl,
     JobPanel,
-    Controls
+    Controls,
+    TempPanel
   },
   data() {
     return {
@@ -255,18 +265,6 @@ export default {
         },
         command: {
           api: "printer/command"
-        },
-        heat_tools: {
-          api: "printer/tool",
-          params: {
-            command: "target"
-          }
-        },
-        heat_bed: {
-          api: "printer/bed",
-          params: {
-            command: "target"
-          }
         }
       }
     };

@@ -7,6 +7,7 @@
     solo
     v-bind="$attrs"
     class="number_input pt-0 mt-0"
+    @keydown.enter="$emit('accept')"
   >
     <template v-if="showControl" #prepend-inner>
       <v-btn @click.stop="decrement" icon>

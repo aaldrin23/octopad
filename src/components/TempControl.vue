@@ -1,7 +1,7 @@
 <template>
   <section>
     <v-row align="center">
-      <v-col cols="5" class="pa-0">
+      <v-col cols="5" class="pa-0 pl-2">
         {{label}} -
         <span class="title">{{actual}}&deg;C</span>
       </v-col>
@@ -11,13 +11,14 @@
           :placeholder="`${target || '0'}°C`"
           v-model.number="newTarget"
           style="max-width : 110px"
+          @accept="setNewTarget(newTarget)"
         ></number-input>
       </v-col>
-      <v-col cols="3" class="pa-0">
+      <v-col cols="3" class="pa-0 d-flex">
         <v-btn
           @click="setNewTarget(newTarget)"
           color="primary"
-          class="pa-0"
+          class="pa-0 flex-grow-1"
           style="min-width : 40px"
         >
           <v-icon>mdi-check-bold</v-icon>
