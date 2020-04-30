@@ -1,5 +1,5 @@
 <template>
-  <v-btn @click="send" color="primary" v-bind="$attrs">
+  <v-btn @click="send" :color="color" v-bind="$attrs">
     <v-icon v-if="icon" :left="!!text">{{icon}}</v-icon>
     <slot>{{text}}</slot>
   </v-btn>
@@ -10,7 +10,10 @@ export default {
   props: {
     text: String,
     icon: String,
-    commands: Array
+    commands: Array,
+    color: {
+      default: "primary"
+    }
   },
   methods: {
     send() {
