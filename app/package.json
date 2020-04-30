@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "name": "octopad",
+  "app-name": "Octopad",
+  "package-name": "io.aaldrin.octopad",
+  "project-type": "webview",
+  "icon": "./assets/icon/drawable-xxhdpi/ic_launcher.png",
+  "dist-path": "./dist",
+  "permission": [
+    "android.permission.INTERNET"
+  ],
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start:dev": "node .",
+    "build": "androidjs build"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "androidjs": "^2.0.2"
+  },
+  "theme": {
+    "fullScreen": true
+  }
+}
