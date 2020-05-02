@@ -1,4 +1,4 @@
-# Octopad
+# octopad
 
 Simple Octoprint control app
 
