@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div v-if="$store.state.connected">
+    <div v-if="connected">
       <v-tabs-items v-model="tab" style="background : transparent">
         <v-tab-item>
           <job-panel></job-panel>
@@ -188,24 +188,25 @@
       <controls></controls>
     </portal>
     <v-bottom-navigation v-model="tab" app fixed active-class="primary">
-      <v-btn>
-        <v-icon>mdi-printer-3d-nozzle</v-icon>
+      <v-btn :disabled="!connected">
         <span>Job</span>
+        <v-icon>mdi-printer-3d-nozzle</v-icon>
       </v-btn>
-      <v-btn>
-        <v-icon>mdi-thermometer</v-icon>
+      <v-btn :disabled="!connected">
         <span>Temperature</span>
+        <v-icon>mdi-thermometer</v-icon>
       </v-btn>
-      <v-btn>
-        <v-icon>mdi-controller-classic-outline</v-icon>
+      <v-btn :disabled="!connected">
         <span>Control</span>
+        <v-icon>mdi-controller-classic-outline</v-icon>
       </v-btn>
-      <v-btn>
-        <v-icon>mdi-camera</v-icon>
+      <v-btn :disabled="!connected">
         <span>Camera</span>
+        <v-icon>mdi-camera</v-icon>
       </v-btn>
     </v-bottom-navigation>
     <cmd-button
+      :disabled="!connected"
       icon="mdi-power-settings"
       :commands=" ['M112']"
       style="z-index : 5;left : 50%;top: 7px;transform : translateX(-50%)"
@@ -270,6 +271,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["connected"]),
     server_ip() {
       return this.$ls.get("server_ip");
     }
