@@ -2,46 +2,40 @@
 
 import axios from "axios";
 
-// Full config:  https://github.com/axios/axios#request-config
-// axios.defaults.baseURL = process.env.baseURL || process.env.apiUrl || '';
-// axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
-// axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-
 const ls = localStorage;
+
+const getLs = function(key) {
+  const item = JSON.parse(ls.getItem(`vuejs__${key}`));
+  return (item || {}).value;
+};
 
 window.createAxios = (ip) => {
   let config = {
     baseURL: `http://${ip}/api`,
-    timeout: 60 * 1000, // Timeout
-    // withCredentials: true, // Check cross-site Access-Control
+    timeout: 60 * 1000,
   };
 
   const _axios = axios.create(config);
 
   _axios.interceptors.request.use(
     function(config) {
-      let api_key = (JSON.parse(ls.getItem("vuejs__api_key")) || {}).value;
+      let api_key = getLs("api_key");
 
-      // Do something before request is sent
       config.headers = {
         "X-Api-Key": api_key,
       };
       return config;
     },
     function(error) {
-      // Do something with request error
       return Promise.reject(error);
     }
   );
 
-  // Add a response interceptor
   _axios.interceptors.response.use(
     function(response) {
-      // Do something with response data
       return response;
     },
     function(error) {
-      // Do something with response error
       return Promise.reject(error);
     }
   );
@@ -49,10 +43,8 @@ window.createAxios = (ip) => {
   window.axios = _axios;
 };
 
-let server_ip = (JSON.parse(ls.getItem("vuejs__server_ip")) || {}).value;
+const server_ip = getLs("server_ip");
 
 if (server_ip) {
-  console.log("creating axios for " + server_ip);
-
   createAxios(server_ip);
 }
