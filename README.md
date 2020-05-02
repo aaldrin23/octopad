@@ -1,19 +1,18 @@
 # octopad
 
-## Project setup
-```
-npm install
-```
+Simple Octoprint control app
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+<img src="https://i.imgur.com/Lxu5pMd.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/mRGkPId.jpg" alt="" width="200"/>
 
-### Compiles and minifies for production
-```
-npm run build
-```
+### Note:
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Contains commands specific for klipper
+
+- Bed Screw/Corners Leveling
+- Mesh Bed leveling
+- Emergency Stop
+
+### Disclaimer:
+
+This is not meant to replace Octoprint as it is dependent to it. It is just a personal preference on how I want to be able to control my 3D printer
