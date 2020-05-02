@@ -2,8 +2,11 @@
 
 Simple Octoprint control app
 
-<img src="https://i.imgur.com/Lxu5pMd.jpg" alt="" width="200"/>
-<img src="https://i.imgur.com/mRGkPId.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/U3Sb2NY.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/mTGBWGt.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/jF7FA7Z.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/jx92k6k.jpg" alt="" width="200"/>
+<img src="https://i.imgur.com/55DKxdI.jpg" alt="" width="200"/>
 
 ### Note:
 
