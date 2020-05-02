@@ -47,6 +47,13 @@
               name="API Key"
               label="Octoprint API Key"
             ></v-text-field>
+            <v-text-field
+              v-model="user_id"
+              v-validate="'required'"
+              :error-messages="errors.collect('User ID')"
+              name="User ID"
+              label="Octoprint User ID"
+            ></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -76,6 +83,7 @@ export default {
       api_key: "",
       server_ip: "",
       session_id: "",
+      user_id: "",
       showSettings: false
     };
   },
@@ -93,10 +101,11 @@ export default {
   async mounted() {
     this.api_key = this.$ls.get("api_key");
     this.server_ip = this.$ls.get("server_ip");
+    this.user_id = this.$ls.get("user_id");
 
     this.showSettings = !this.server_ip || !this.api_key;
 
-    if (this.server_ip && this.api_key) {
+    if (this.server_ip && this.api_key && this.user_id) {
       await this.login();
       this.startServerEventListener();
     }
@@ -109,41 +118,44 @@ export default {
       if (valid) {
         this.$ls.set("api_key", this.api_key);
         this.$ls.set("server_ip", this.server_ip);
-        window.createAxios(this.server_ip);
+        this.$ls.set("user_id", this.user_id);
+
+        createAxios(this.server_ip);
+
         await this.login();
+
         this.startServerEventListener();
         this.showSettings = false;
       }
     },
     async login() {
-      console.log(`Obtaining session id using ${this.api_key}`);
-
       try {
         const { data } = await axios
           .post("/login", {
             passive: true
           })
-          .catch(e => {});
+          .catch(e => {
+            throw e;
+          });
 
         this.session_id = data.session;
         this.$ls.set("session_id", this.session_id);
         this.setConnected(true);
       } catch (error) {
-        console.log(error);
-
         this.$toast.error("Unable to connect to server!");
       }
     },
     startServerEventListener() {
       let vm = this;
+
       const server_ip = this.$ls.get("server_ip");
+
       var sock = new SockJS(`http://${server_ip}/sockjs`);
 
       sock.onopen = function() {
-        console.log("Authenticating push message..");
         sock.send(
           JSON.stringify({
-            auth: "aaldrin:" + vm.session_id
+            auth: vm.user_id + ":" + vm.session_id
           })
         );
       };
@@ -158,11 +170,11 @@ export default {
         timeout = setTimeout(() => {
           vm.setConnected(false);
           vm.disconected = true;
-        }, 20000);
+        }, 30000);
       };
 
       sock.onclose = function() {
-        console.log("Connection closed!");
+        this.setConnected(false);
       };
     }
   }
