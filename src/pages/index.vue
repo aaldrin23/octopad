@@ -10,6 +10,28 @@
           <temp-panel></temp-panel>
         </v-tab-item>
         <v-tab-item>
+          <v-row justify="center" class="ma-0 d-flex">
+            <v-card
+              outlined
+              class="d-flex justify-center align-center"
+              style="height: 304px;min-height: 304px;width: 95%"
+            >
+              <v-row v-if="noCam" justify="center" style="position : absolute">
+                <v-icon x-large>mdi-camera-off</v-icon>
+              </v-row>
+              <v-img
+                v-show="!noCam"
+                @error="cameraStreamError"
+                @load="() => {noCam = false;loadingCamera = false}"
+                :src="`http://${server_ip}/webcam/?action=stream`"
+                height="304"
+                class="d-flex"
+              ></v-img>
+            </v-card>
+            <controls></controls>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item>
           <v-expansion-panels mandatory>
             <!--  <v-expansion-panel>
               <v-expansion-panel-header>Temperature</v-expansion-panel-header>
@@ -17,12 +39,6 @@
                
               </v-expansion-panel-content>
             </v-expansion-panel>-->
-            <v-expansion-panel>
-              <v-expansion-panel-header>Control</v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <portal-target name="controls"></portal-target>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
             <v-expansion-panel>
               <v-expansion-panel-header>Filament</v-expansion-panel-header>
               <v-expansion-panel-content>
@@ -72,7 +88,11 @@
                     ></cmd-button>
                   </v-col>
                   <v-col cols="4" class="d-flex justify-center">
-                    <cmd-button text="Next" icon="mdi-skip-next" :commands=" ['ACCEPT']"></cmd-button>
+                    <cmd-button
+                      text="Next"
+                      icon="mdi-skip-next"
+                      :commands=" ['ACCEPT','TESTZ Z=-5.0']"
+                    ></cmd-button>
                   </v-col>
                   <v-col cols="4" class="d-flex justify-center">
                     <cmd-button text="Abort" icon="mdi-cancel" :commands=" ['ABORT']"></cmd-button>
@@ -87,7 +107,7 @@
                     <cmd-button icon="mdi-arrow-up-bold-box-outline" :commands=" ['TESTZ Z=0.05']"></cmd-button>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-center">
-                    <cmd-button icon="mdi-arrow-up-bold-box-outline" :commands=" ['TESTZ Z=0.001']"></cmd-button>
+                    <cmd-button icon="mdi-arrow-up-bold-box-outline" :commands=" ['TESTZ Z=0.01']"></cmd-button>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-center">200&micro;</v-col>
                   <v-col cols="3" class="d-flex justify-center">100&micro;</v-col>
@@ -96,25 +116,25 @@
                   <v-col cols="3" class="d-flex justify-center">
                     <cmd-button
                       icon="mdi-arrow-down-bold-box-outline"
-                      :commands=" ['TESTZ Z=0.20']"
+                      :commands=" ['TESTZ Z=-0.20']"
                     ></cmd-button>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-center">
                     <cmd-button
                       icon="mdi-arrow-down-bold-box-outline"
-                      :commands=" ['TESTZ Z=0.10']"
+                      :commands=" ['TESTZ Z=-0.10']"
                     ></cmd-button>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-center">
                     <cmd-button
                       icon="mdi-arrow-down-bold-box-outline"
-                      :commands=" ['TESTZ Z=0.05']"
+                      :commands=" ['TESTZ Z=-0.05']"
                     ></cmd-button>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-center">
                     <cmd-button
                       icon="mdi-arrow-down-bold-box-outline"
-                      :commands=" ['TESTZ Z=0.001']"
+                      :commands=" ['TESTZ Z=-0.01']"
                     ></cmd-button>
                   </v-col>
                 </v-row>
@@ -159,34 +179,9 @@
             </v-expansion-panel>
           </v-expansion-panels>
         </v-tab-item>
-        <v-tab-item>
-          <v-row justify="center" class="ma-0 d-flex">
-            <v-card
-              outlined
-              class="d-flex justify-center align-center"
-              style="height: 304px;min-height: 304px;width: 95%"
-            >
-              <v-row v-if="noCam" justify="center" style="position : absolute">
-                <v-icon x-large>mdi-camera-off</v-icon>
-              </v-row>
-              <v-img
-                v-show="!noCam"
-                @error="cameraStreamError"
-                @load="() => {noCam = false;loadingCamera = false}"
-                :src="`http://${server_ip}/webcam/?action=stream`"
-                height="304"
-                class="d-flex"
-              ></v-img>
-            </v-card>
-            <portal-target name="controls"></portal-target>
-          </v-row>
-        </v-tab-item>
       </v-tabs-items>
     </div>
     <v-img v-else src="@/assets/octoprint.png"></v-img>
-    <portal to="controls">
-      <controls></controls>
-    </portal>
     <v-bottom-navigation v-model="tab" app fixed active-class="primary">
       <v-btn :disabled="!connected">
         <span>Job</span>
@@ -201,8 +196,8 @@
         <v-icon>mdi-controller-classic-outline</v-icon>
       </v-btn>
       <v-btn :disabled="!connected">
-        <span>Camera</span>
-        <v-icon>mdi-camera</v-icon>
+        <span>Others</span>
+        <v-icon>mdi-gamepad</v-icon>
       </v-btn>
     </v-bottom-navigation>
     <cmd-button

@@ -3,7 +3,7 @@
     <v-progress-linear v-if="loading && $store.state.connected" indeterminate></v-progress-linear>
     <div v-else>
       <span class="title primary--text px-3">Files</span>
-      <v-list rippl>
+      <v-list v-if="files.files.length" rippl>
         <v-list-item @click="stack.pop()" v-if="items.children">
           <v-list-item-title>
             <v-icon>mdi-arrow-left</v-icon>
@@ -50,6 +50,9 @@
           </v-list-item>
         </template>
       </v-list>
+      <v-row v-else justify="center" class="pb-4">
+        <span class="grey--text">No File(s) available!</span>
+      </v-row>
     </div>
   </section>
 </template>
@@ -61,7 +64,7 @@ export default {
     return {
       loading: true,
       stack: [],
-      files: []
+      files: {}
     };
   },
   computed: {

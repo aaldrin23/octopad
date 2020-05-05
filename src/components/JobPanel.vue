@@ -5,8 +5,13 @@
         <v-expansion-panel-header>
           <div v-if="val(state,'flags.printing')">
             <v-icon>mdi-printer-3d-nozzle</v-icon>
+            {{state.text}}
           </div>
-          <div v-else align="center">{{state.text || '--'}}</div>
+
+          <div v-else>
+            <v-icon>mdi-printer-3d</v-icon>
+            {{state.text || '--'}}
+          </div>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="pa-0">
           <v-card :loading="loading">
