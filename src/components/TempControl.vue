@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-col cols="4" class="pa-0">
         <number-input
-          :placeholder="`${target || '0'}°C`"
+          :placeholder="target ? `${target}°C` : 'off'"
           v-model.number="newTarget"
           style="max-width : 110px"
           @accept="setNewTarget(newTarget)"
