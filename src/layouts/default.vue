@@ -45,12 +45,14 @@
               v-validate="'required'"
               :error-messages="errors.collect('API Key')"
               name="API Key"
-              label="Octoprint API Key"
+              label="User API Key"
+              append-icon="mdi-qrcode-scan"
+              @click:append="scanQR = true"
             ></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :disabled="!server_ip || !api_key" @click="saveSettings" color="primary">Save</v-btn>
+            <v-btn :disabled="!server_ip || !api_key " @click="saveSettings" color="primary">Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -58,10 +60,16 @@
     <v-content>
       <router-view />
     </v-content>
-    <v-dialog :value="!connected && disconected" persistent max-width="500px">
+    <v-dialog v-model="scanQR" max-width="500px">
       <v-card>
-        <v-card-title class="error pa-2">No Connection!</v-card-title>
-        <v-card-text>Disconected from Server</v-card-text>
+        <v-card-text class="pa-2">
+          <div width="100%" id="camera" autoplay></div>
+        </v-card-text>
+        <v-card-actions class="justify-center">
+          <v-btn @click="scanQR = false" icon>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-app>
@@ -72,11 +80,15 @@ import { mapState, mapMutations } from "vuex";
 export default {
   data() {
     return {
+      scanQR: false,
       disconected: false,
       api_key: "",
       server_ip: "",
       session_id: "",
-      showSettings: false
+      user_id: "",
+      showSettings: false,
+      scanner: null,
+      socket: null
     };
   },
   computed: {
@@ -93,10 +105,11 @@ export default {
   async mounted() {
     this.api_key = this.$ls.get("api_key");
     this.server_ip = this.$ls.get("server_ip");
+    this.user_id = this.$ls.get("user_id");
 
     this.showSettings = !this.server_ip || !this.api_key;
 
-    if (this.server_ip && this.api_key) {
+    if (this.server_ip && this.api_key && this.user_id) {
       await this.login();
       this.startServerEventListener();
     }
@@ -109,61 +122,111 @@ export default {
       if (valid) {
         this.$ls.set("api_key", this.api_key);
         this.$ls.set("server_ip", this.server_ip);
-        window.createAxios(this.server_ip);
+
+        createAxios(this.server_ip);
+
         await this.login();
-        this.startServerEventListener();
+
         this.showSettings = false;
       }
     },
     async login() {
-      console.log(`Obtaining session id using ${this.api_key}`);
-
       try {
         const { data } = await axios
           .post("/login", {
             passive: true
           })
-          .catch(e => {});
+          .catch(e => {
+            throw e;
+          });
 
-        this.session_id = data.session;
-        this.$ls.set("session_id", this.session_id);
-        this.setConnected(true);
+        if (data.name && data.user) {
+          this.connect(data);
+        } else {
+          this.disconect();
+          this.$toast.error("Pleas use a valid User API key!");
+        }
       } catch (error) {
-        console.log(error);
-
+        this.disconect();
         this.$toast.error("Unable to connect to server!");
       }
     },
+    connect(data) {
+      this.session_id = data.session;
+      this.$ls.set("session_id", this.session_id);
+      this.$ls.set("user_id", data.name);
+      this.$toast.success(`You are logged in as "${data.name}"`);
+      this.setConnected(true);
+      this.startServerEventListener();
+    },
+    disconect() {
+      if (this.socket) this.socket.close();
+      this.$ls.set("session_id", null);
+      this.$ls.set("user_id", null);
+      this.setConnected(false);
+    },
     startServerEventListener() {
-      let vm = this;
+      let vm = this,
+        sock = vm.socket;
+
       const server_ip = this.$ls.get("server_ip");
-      var sock = new SockJS(`http://${server_ip}/sockjs`);
+
+      sock = new SockJS(`http://${server_ip}/sockjs`);
 
       sock.onopen = function() {
-        console.log("Authenticating push message..");
         sock.send(
           JSON.stringify({
-            auth: "aaldrin:" + vm.session_id
+            auth: vm.user_id + ":" + vm.session_id
           })
         );
       };
 
       let timeout = null;
       sock.onmessage = function(e) {
-        vm.setConnected(true);
-        vm.disconected = false;
         vm.$eventBus.$emit("server_message", e);
 
         clearTimeout(timeout);
         timeout = setTimeout(() => {
           vm.setConnected(false);
-          vm.disconected = true;
-        }, 20000);
+        }, 30000);
+        vm.setConnected(true);
       };
 
       sock.onclose = function() {
-        console.log("Connection closed!");
+        vm.setConnected(false);
       };
+    }
+  },
+  watch: {
+    scanQR(val) {
+      let vm = this;
+      if (val) {
+        // element to render video
+        var video = document.getElementById("camera");
+
+        // start device video
+        app.camera.init(video, {
+          video: true,
+          audio: false
+        });
+
+        // scan and read qrcode
+        Html5Qrcode.getCameras().then(cameras => {
+          if (cameras && cameras.length) {
+            var cameraId = cameras[0].id;
+            vm.scanner = new Html5Qrcode(/* element id */ "camera");
+            try {
+              vm.scanner.start(cameraId, {}, e => {
+                vm.api_key = e;
+                vm.scanQR = false;
+                vm.$toast.success("QR Detected!");
+              });
+            } catch (error) {}
+          }
+        });
+      } else {
+        vm.scanner.stop();
+      }
     }
   }
 };
