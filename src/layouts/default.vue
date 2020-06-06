@@ -18,6 +18,14 @@
         </span>
       </div>
       <v-dialog v-model="showSettings" scrollable persistent max-width="500px">
+        <v-overlay v-model="waitDecision" absolute>
+          <v-row align="center" justify="center">
+            <v-col cols="12" class="d-flex justify-center">
+              <v-progress-circular indeterminate></v-progress-circular>
+            </v-col>
+            <v-col cols="12" class="d-flex justify-center">Waiting for decision...</v-col>
+          </v-row>
+        </v-overlay>
         <template #activator="{on}">
           <v-btn v-on="on" icon>
             <v-icon>mdi-tune</v-icon>
@@ -45,21 +53,37 @@
               v-validate="'required'"
               :error-messages="errors.collect('API Key')"
               name="API Key"
-              label="User API Key"
-              append-icon="mdi-qrcode-scan"
-              @click:append="scanQR = true"
+              label="API Key"
             ></v-text-field>
+            <v-btn
+              block
+              :disabled="!server_ip || errors.any() || connected"
+              @click.native="requestAPIKey"
+              color="primary"
+            >Request API Key</v-btn>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :disabled="!server_ip || !api_key " @click="saveSettings" color="primary">Save</v-btn>
+            <v-btn :disabled="!server_ip || !api_key" @click="saveSettings" color="primary">Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-app-bar>
     <v-content>
+      <v-overlay v-if="!connected">
+        <v-row>
+          <v-col cols="12" class="d-flex justify-center">
+            <span class="grey--text title">Disconnected from server!</span>
+          </v-col>
+          <v-col cols="12" class="d-flex justify-center" @click="saveSettings">
+            <v-btn v-if="api_key && server_ip" text color="success">Retry</v-btn>
+            <v-btn v-else @click="showSettings =true" text color="blue">Open Settings</v-btn>
+          </v-col>
+        </v-row>
+      </v-overlay>
       <router-view />
     </v-content>
+
     <v-dialog v-model="scanQR" max-width="500px">
       <v-card>
         <v-card-text class="pa-2">
@@ -77,16 +101,18 @@
 <script>
 import SockJS from "sockjs-client";
 import { mapState, mapMutations } from "vuex";
+import _axios from "axios";
 export default {
   data() {
     return {
       scanQR: false,
       disconected: false,
       api_key: "",
-      server_ip: "",
+      server_ip: "192.168.100.11",
       session_id: "",
       user_id: "",
       showSettings: false,
+      waitDecision: false,
       scanner: null,
       socket: null
     };
@@ -104,14 +130,13 @@ export default {
   },
   async mounted() {
     this.api_key = this.$ls.get("api_key");
-    this.server_ip = this.$ls.get("server_ip");
+    // this.server_ip = this.$ls.get("server_ip");
     this.user_id = this.$ls.get("user_id");
 
     this.showSettings = !this.server_ip || !this.api_key;
 
     if (this.server_ip && this.api_key && this.user_id) {
       await this.login();
-      this.startServerEventListener();
     }
   },
   methods: {
@@ -126,6 +151,10 @@ export default {
         createAxios(this.server_ip);
 
         await this.login();
+
+        if (!this.sock) {
+          this.startServerEventListener();
+        }
 
         this.showSettings = false;
       }
@@ -160,9 +189,9 @@ export default {
       this.startServerEventListener();
     },
     disconect() {
-      if (this.socket) this.socket.close();
+      // if (this.socket) this.socket.close();
       this.$ls.set("session_id", null);
-      this.$ls.set("user_id", null);
+      // this.$ls.set("user_id", null);
       this.setConnected(false);
     },
     startServerEventListener() {
@@ -184,49 +213,45 @@ export default {
       let timeout = null;
       sock.onmessage = function(e) {
         vm.$eventBus.$emit("server_message", e);
-
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          vm.setConnected(false);
-        }, 30000);
         vm.setConnected(true);
       };
 
       sock.onclose = function() {
-        vm.setConnected(false);
+        vm.disconect();
       };
-    }
-  },
-  watch: {
-    scanQR(val) {
-      let vm = this;
-      if (val) {
-        // element to render video
-        var video = document.getElementById("camera");
+    },
+    async requestAPIKey(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
 
-        // start device video
-        app.camera.init(video, {
-          video: true,
-          audio: false
-        });
+      const { data } = await _axios.post(
+        `http://${this.server_ip}/plugin/appkeys/request`,
+        {
+          app: "Octopad"
+        }
+      );
 
-        // scan and read qrcode
-        Html5Qrcode.getCameras().then(cameras => {
-          if (cameras && cameras.length) {
-            var cameraId = cameras[0].id;
-            vm.scanner = new Html5Qrcode(/* element id */ "camera");
-            try {
-              vm.scanner.start(cameraId, {}, e => {
-                vm.api_key = e;
-                vm.scanQR = false;
-                vm.$toast.success("QR Detected!");
-              });
-            } catch (error) {}
-          }
-        });
-      } else {
-        vm.scanner.stop();
-      }
+      const appToken = data.app_token;
+      this.waitDecision = true;
+
+      const poll = setInterval(() => {
+        _axios
+          .get(`http://${this.server_ip}/plugin/appkeys/request/${appToken}`)
+          .then(res => {
+            if (res.status == 200) {
+              clearInterval(poll);
+              this.$set(this, "api_key", res.data.api_key);
+              this.waitDecision = false;
+              this.saveSettings();
+            }
+          })
+          .catch(err => {
+            if (err.status == 404) {
+              clearInterval(poll);
+            }
+            this.waitDecision = false;
+          });
+      }, 1000);
     }
   }
 };
