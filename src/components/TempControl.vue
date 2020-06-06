@@ -64,7 +64,7 @@
         <v-card-title class="pa-2">Add to Profile</v-card-title>
         <v-card-text class="pa-2">
           <div align="center" class="display-1 ma-2">{{`${newTarget}&deg;C`}}</div>
-          <v-text-field v-model="newProfileName" label="Name" hide-details solo></v-text-field>
+          <v-text-field v-model="newProfileName" placeholder="Name" hide-details solo></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
